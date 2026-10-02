@@ -1,0 +1,50 @@
+services:
+  postgis_sut:
+    image: postgis/postgis:16-3.4
+    container_name: postgis_sut
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: geodb_bench
+      POSTGRES_USER: bench_user
+      POSTGRES_PASSWORD: bench_password
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4096M
+    command: >
+      postgres 
+      -c shared_buffers=1024MB 
+      -c work_mem=64MB 
+      -c max_parallel_workers=4 
+      -c max_parallel_workers_per_gather=2
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+
+  mysql_sut:
+    image: mysql:8.4
+    container_name: mysql_sut
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: geodb_bench
+      MYSQL_USER: bench_user
+      MYSQL_PASSWORD: bench_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3307:3306"
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4096M
+    command:
+      - "--innodb-buffer-pool-size=1073741824"
+      - "--max-connections=50"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  postgis_data:
+  mysql_data:
